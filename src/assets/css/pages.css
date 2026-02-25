@@ -2,8 +2,9 @@
 .dashboard {
   padding: 20px;
   min-height: 100vh;
-  background: linear-gradient(180deg, #0f172a, #1e3a8a);
-  color: #f1f5f9;
+  /* background: linear-gradient(180deg, #0f172a, #1e3a8a); */
+
+  /* color: #f1f5f9; */
 }
 .dashboard-title {
   font-size: 28px;
