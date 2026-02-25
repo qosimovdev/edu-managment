@@ -17,14 +17,11 @@ import "./assets/css/pages.css";
 
 function App() {
   return (
-    // <Router>
     <Routes>
-      {/* Login alohida route */}
       <Route path="/login" element={<Login />} />
 
-      {/* Layout ichidagi barcha page routes */}
       <Route path="/" element={<Layout />}>
-        <Route index element={<Dashboard />} /> {/* default */}
+        <Route index element={<Dashboard />} />
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="students" element={<Students />} />
         <Route path="teachers" element={<Teachers />} />
@@ -32,11 +29,9 @@ function App() {
         <Route path="groups" element={<Groups />} />
         <Route path="payments" element={<Payments />} />
         <Route path="attendance" element={<Attendance />} />
-        {/* Default fallback */}
         <Route path="*" element={<Navigate to="/" />} />
       </Route>
     </Routes>
-    // </Router>
   );
 }
 
