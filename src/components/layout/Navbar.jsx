@@ -1,8 +1,10 @@
 import { useState, useRef, useEffect } from "react";
+// import { useNavigate } from "react-router-dom";
 
 function Navbar() {
   const [openDropdown, setOpenDropdown] = useState(false);
   const dropdownRef = useRef();
+  // const navigate = useNavigate();
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -14,6 +16,7 @@ function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // navigate("/login");
   return (
     <div className="navbar">
       <h3>Dashboard</h3>
