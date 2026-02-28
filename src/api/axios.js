@@ -1,13 +1,14 @@
 import axios from "axios";
 
-// Base API instance
+// Base API 
 const api = axios.create({
-    baseURL: "http://localhost:5000/api"
+    baseURL: "http://localhost:5000/api",
+    "Content-Type": "application/json",
 });
 
 // Request interceptor → JWT token yuborish
 api.interceptors.request.use((config) => {
-    const token = localStorage.getItem("token"); // JWT token saqlanadi login paytida
+    const token = localStorage.getItem("token");
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
