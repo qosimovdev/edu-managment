@@ -1,17 +1,33 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Button from "../../components/ui/Button";
+import Input from "../../components/ui/Input";
+import { login } from "../../api/auth.service";
 
 function Login() {
+  const navigate = useNavigate();
+
   const [form, setForm] = useState({ email: "", password: "" });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    alert(`Logging in with ${form.email}`);
-    // shu yerda auth API chaqirishingiz mumkin
+    setLoading(true);
+    setError("");
+
+    try {
+      await login(form.email, form.password);
+      navigate("/");
+    } catch (err) {
+      setError(err.response?.data?.message || "Login failed");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -19,29 +35,28 @@ function Login() {
       <form className="login-form" onSubmit={handleSubmit}>
         <h2>Login</h2>
 
-        <input
-          type="email"
+        {error && <p style={{ color: "red" }}>{error}</p>}
+        <Input
           name="email"
-          value={form.email}
+          value={form.name}
           onChange={handleChange}
           placeholder="Email"
-          required
         />
 
-        <input
-          type="password"
+        <Input
           name="password"
-          value={form.password}
+          type="password"
+          value={form.name}
           onChange={handleChange}
           placeholder="Password"
-          required
         />
 
-        <Button type="submit" variant="success">
+        <Button loading={loading} type="submit" variant="success">
           Login
         </Button>
       </form>
     </div>
   );
 }
+
 export default Login;
