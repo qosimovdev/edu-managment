@@ -1,10 +1,25 @@
 import { useState, useRef, useEffect } from "react";
-// import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { logout, getMe } from "../../api/auth.service";
 
 function Navbar() {
   const [openDropdown, setOpenDropdown] = useState(false);
+  const [user, setUser] = useState(null);
   const dropdownRef = useRef();
-  // const navigate = useNavigate();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await getMe();
+        setUser(res.user);
+      } catch (err) {
+        console.log("User fetch error:", err);
+      }
+    };
+
+    fetchUser();
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -16,25 +31,26 @@ function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // navigate("/login");
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+
+  const avatarLetter = user?.fullName?.charAt(0)?.toUpperCase() || "A";
+  const name = user?.fullName;
   return (
     <div className="navbar">
-      <h3>Dashboard</h3>
-
+      <h3>{name}</h3>
       <div className="navbar-right" ref={dropdownRef}>
         <span className="notification">🔔</span>
-
         <div className="avatar" onClick={() => setOpenDropdown(!openDropdown)}>
-          A
+          {avatarLetter}
         </div>
-
         {openDropdown && (
           <div className="dropdown">
-            {["Profile", "Logout"].map((item) => (
-              <button key={item} onClick={() => alert(item)}>
-                {item}
-              </button>
-            ))}
+            <button onClick={() => navigate("/profile")}>Profile</button>
+
+            <button onClick={handleLogout}>Logout</button>
           </div>
         )}
       </div>

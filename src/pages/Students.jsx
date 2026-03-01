@@ -1,120 +1,188 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Table from "../components/ui/Table";
 import Input from "../components/ui/Input";
 import Select from "../components/ui/Select";
 import Button from "../components/ui/Button";
 import Modal from "../components/ui/Modal";
+import {
+  getStudents,
+  createStudent,
+  updateStudent,
+  deleteStudent,
+} from "../api/students.service";
+import { getGroups } from "../api/group.service";
 
 function Students() {
-  const initialData = [
-    {
-      id: 1,
-      name: "Ali",
-      group: "Frontend",
-      phone: "998901234567",
-      email: "ali@mail.com",
-      status: "Paid",
-    },
-    {
-      id: 2,
-      name: "Vali",
-      group: "Backend",
-      phone: "998907654321",
-      email: "vali@mail.com",
-      status: "Debt",
-    },
-  ];
-
-  const groupsOptions = [
-    { label: "Frontend", value: "Frontend" },
-    { label: "Backend", value: "Backend" },
-    { label: "Fullstack", value: "Fullstack" },
-  ];
-
-  const [students, setStudents] = useState(initialData);
+  const [students, setStudents] = useState([]);
   const [isAddOpen, setIsAddOpen] = useState(false);
-  const [isAdding, setIsAdding] = useState(false);
-  const [isViewOpen, setIsViewOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isViewOpen, setIsViewOpen] = useState(false);
   const [currentStudent, setCurrentStudent] = useState(null);
+  const [groupsOptions, setGroupsOtions] = useState([]);
 
   const [form, setForm] = useState({
-    name: "",
-    group: "",
+    fullName: "",
     phone: "",
-    email: "",
+    groupId: "",
+    status: "active",
+    balance: "",
   });
 
-  // Handlers
-  const handleAdd = () => {
-    setIsAdding(true);
-    setTimeout(() => {
-      setIsAdding(false);
-      setIsAddOpen(false);
-    }, 1500);
-    const newStudent = { ...form, id: Date.now(), status: "Debt" }; // default qarzdor
-    setStudents([...students, newStudent]);
-    setForm({ name: "", group: "", phone: "", email: "" });
-    setIsAddOpen(false);
-  };
+  // Fetch groups
+  useEffect(() => {
+    const fetchGroups = async () => {
+      try {
+        const groups = await getGroups();
+        setGroupsOtions(groups.map((g) => ({ label: g.name, value: g.id })));
+      } catch (err) {
+        console.log("Fetch groups error:", err);
+      }
+    };
+    fetchGroups();
+  }, []);
 
-  const handleEdit = () => {
-    setStudents(
-      students.map((s) =>
-        s.id === currentStudent.id ? { ...currentStudent } : s,
-      ),
-    );
-    setCurrentStudent(null);
-    setIsEditOpen(false);
-  };
+  // Fetch students
+  useEffect(() => {
+    const fetchStudents = async () => {
+      try {
+        const students = await getStudents();
+        setStudents(students);
+      } catch (err) {
+        console.error("Fetch students error:", err);
+      }
+    };
+    fetchStudents();
+  }, []);
 
-  const handleDelete = (student) => {
-    if (window.confirm(`Delete ${student.name}?`)) {
-      setStudents(students.filter((s) => s.id !== student.id));
+  // Form handlers
+  const handleFormChange = (e) => {
+    const { name, value } = e.target;
+    if (isEditOpen) {
+      setCurrentStudent({ ...currentStudent, [name]: value });
+    } else {
+      setForm({
+        ...form,
+        [name]: name === "groupId" ? parseInt(value) : value,
+      });
     }
   };
 
-  const handleView = (student) => {
-    setCurrentStudent(student);
-    setIsViewOpen(true);
+  // Add student
+  const handleAdd = async () => {
+    try {
+      console.log("Form data:", form);
+      if (!form.fullName || !form.phone || !form.groupId) {
+        console.error("Fill all required fields!");
+        return;
+      }
+      const payload = {
+        fullName: form.fullName.trim(),
+        phone: form.phone.trim(),
+        groupId: parseInt(form.groupId),
+        balance: parseFloat(form.balance) || 0,
+        status: form.status,
+      };
+      const student = await createStudent(payload);
+      setStudents([...students, student]);
+      setForm({
+        fullName: "",
+        phone: "",
+        groupId: "",
+        status: "active",
+        balance: 0,
+      });
+      setIsAddOpen(false);
+    } catch (err) {
+      console.error("Add student error:", err);
+    }
   };
-  const handleOpenEdit = (student) => {
-    setCurrentStudent(student);
-    setIsEditOpen(true);
-  };
-  const handleFormChange = (e) => {
-    const { name, value } = e.target;
-    if (isEditOpen) setCurrentStudent({ ...currentStudent, [name]: value });
-    else setForm({ ...form, [name]: value });
+  // Edit student
+  const handleEdit = async () => {
+    try {
+      const updatedStudent = await updateStudent(
+        currentStudent.id,
+        currentStudent,
+      );
+      setStudents((prevStudents) =>
+        prevStudents.map((s) =>
+          s.id === updatedStudent.id ? updatedStudent : s,
+        ),
+      );
+      setCurrentStudent(null);
+      setIsEditOpen(false);
+    } catch (err) {
+      console.error("Edit student error:", err);
+    }
   };
 
-  // **New: toggle status inline**
-  const toggleStatus = (id) => {
-    setStudents(
-      students.map((s) =>
-        s.id === id
-          ? { ...s, status: s.status === "Paid" ? "Debt" : "Paid" }
-          : s,
-      ),
-    );
+  // Delete student
+  const handleDelete = async (student) => {
+    if (!window.confirm(`Delete ${student.fullName}?`)) return;
+    try {
+      await deleteStudent(student.id);
+      setStudents(students.filter((s) => s.id !== student.id));
+    } catch (err) {
+      console.error("Delete student error:", err);
+    }
   };
 
-  const columns = ["name", "group", "phone", "email", "status", "actions"];
+  // Toggle status
+  const toggleStatus = async (student) => {
+    try {
+      const updated = {
+        ...student,
+        status: student.status === "active" ? "inactive" : "active",
+      };
+      const updatedStudent = await updateStudent(student.id, updated);
+      setStudents(
+        students.map((s) => (s.id === student.id ? updatedStudent : s)),
+      );
+    } catch (err) {
+      console.error("Toggle status error:", err);
+    }
+  };
+
+  const columns = [
+    "Name",
+    "Group",
+    "Mentor",
+    "Phone",
+    "Balance",
+    "Status",
+    "Actions",
+  ];
 
   const data = students.map((s) => ({
-    ...s,
-    status: (
+    Name: s.fullName,
+    Group: s.group?.name,
+    // Mentor: s.group?.mentor?.fullName,
+    Phone: s.phone,
+    Balance: s.balance.toLocaleString(),
+    Status: (
       <Button
-        variant={s.status === "Paid" ? "success" : "danger"}
-        onClick={() => toggleStatus(s.id)}
+        variant={s.status === "active" ? "success" : "danger"}
+        onClick={() => toggleStatus(s)}
       >
-        {s.status === "Paid" ? "To'lagan" : "Qarzdor"}
+        {s.status === "active" ? "Active" : "Inactive"}
       </Button>
     ),
-    actions: (
+    Actions: (
       <>
-        <Button onClick={() => handleView(s)}>See</Button>
-        <Button variant="success" onClick={() => handleOpenEdit(s)}>
+        <Button
+          onClick={() => {
+            setCurrentStudent(s);
+            setIsViewOpen(true);
+          }}
+        >
+          View
+        </Button>
+        <Button
+          variant="success"
+          onClick={() => {
+            setCurrentStudent(s);
+            setIsEditOpen(true);
+          }}
+        >
           Edit
         </Button>
         <Button variant="danger" onClick={() => handleDelete(s)}>
@@ -134,40 +202,40 @@ function Students() {
         }}
       >
         <h2>Students</h2>
-        <Button
-          variant="success"
-          loading={isAdding}
-          onClick={() => setIsAddOpen(true)}
-        >
+        <Button variant="success" onClick={() => setIsAddOpen(true)}>
           Add Student
         </Button>
       </div>
+
       <div
-        style={{
-          background: "#1e293b",
-          padding: "20px",
-          borderRadius: "12px",
-          // marginTop: "20px",
-        }}
+        style={{ background: "#1e293b", padding: "20px", borderRadius: "12px" }}
       >
         <Table columns={columns} data={data} />
       </div>
 
       {/* Add Modal */}
       <Modal isOpen={isAddOpen} onClose={() => setIsAddOpen(false)}>
-        <h3 style={{ marginBottom: "15px" }}>Add Student</h3>
+        <h3>Add Student</h3>
         <Input
-          name="name"
-          value={form.name}
+          name="fullName"
+          value={form.fullName}
           onChange={handleFormChange}
-          placeholder="Student Name"
+          placeholder="Full Name"
         />
         <Select
-          name="group"
-          value={form.group}
+          name="groupId"
+          value={groupsOptions.find((g) => g.value === form.groupId)}
           onChange={handleFormChange}
           options={groupsOptions}
         />
+        {/* <select name="groupId" value={form.groupId} onChange={handleFormChange}>
+          <option value="">Select group</option>
+          {groupsOptions.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select> */}
         <Input
           name="phone"
           value={form.phone}
@@ -175,13 +243,17 @@ function Students() {
           placeholder="Phone"
         />
         <Input
-          name="email"
-          value={form.email}
+          name="balance"
+          value={form.balance}
           onChange={handleFormChange}
-          placeholder="Email"
+          placeholder="Balance"
+          type="number"
         />
         <div
-          style={{ transform: "translate(-75px, 62px)", textAlign: "right" }}
+          style={{
+            transform: "translate(-75px, 62px)",
+            textAlign: "right",
+          }}
         >
           <Button variant="success" onClick={handleAdd}>
             Add
@@ -189,60 +261,32 @@ function Students() {
         </div>
       </Modal>
 
-      {/* View Modal */}
-      <Modal isOpen={isViewOpen} onClose={() => setIsViewOpen(false)}>
-        <h3 style={{ marginBottom: "15px" }}>View Student</h3>
-        {currentStudent && (
-          <div>
-            <p>
-              <strong>Name:</strong> {currentStudent.name}
-            </p>
-            <p>
-              <strong>Group:</strong> {currentStudent.group}
-            </p>
-            <p>
-              <strong>Phone:</strong> {currentStudent.phone}
-            </p>
-            <p>
-              <strong>Email:</strong> {currentStudent.email}
-            </p>
-            <p>
-              <strong>Status:</strong>{" "}
-              {currentStudent.status === "Paid" ? "To'lagan" : "Qarzdor"}
-            </p>
-          </div>
-        )}
-      </Modal>
-
       {/* Edit Modal */}
       <Modal isOpen={isEditOpen} onClose={() => setIsEditOpen(false)}>
-        <h3 style={{ marginBottom: "15px" }}>Edit Student</h3>
+        <h3>Edit Student</h3>
         {currentStudent && (
           <>
             <Input
-              label="Name"
-              name="name"
-              value={currentStudent.name}
+              name="fullName"
+              value={currentStudent.fullName}
               onChange={handleFormChange}
             />
             <Select
-              label="Group"
-              name="group"
-              value={currentStudent.group}
+              name="groupId"
+              value={currentStudent.groupId}
               onChange={handleFormChange}
               options={groupsOptions}
             />
             <Input
-              label="Phone"
               name="phone"
               value={currentStudent.phone}
               onChange={handleFormChange}
             />
             <Input
-              label="Email"
-              name="email"
-              value={currentStudent.email}
+              name="balance"
+              value={currentStudent.balance}
               onChange={handleFormChange}
+              type="number"
             />
             <div
               style={{
@@ -250,11 +294,40 @@ function Students() {
                 textAlign: "right",
               }}
             >
-              <Button variant="update" onClick={handleEdit}>
+              <Button variant="success" onClick={handleEdit}>
                 Update
               </Button>
             </div>
           </>
+        )}
+      </Modal>
+
+      {/* View Modal */}
+      <Modal isOpen={isViewOpen} onClose={() => setIsViewOpen(false)}>
+        <h3>View Student</h3>
+        {currentStudent && (
+          <div>
+            <p>
+              <strong>Name:</strong> {currentStudent.fullName}
+            </p>
+            <p>
+              <strong>Group:</strong> {currentStudent.group?.name}
+            </p>
+            <p>
+              <strong>Mentor:</strong> {currentStudent.group?.mentor?.fullName}
+            </p>
+            <p>
+              <strong>Phone:</strong> {currentStudent.phone}
+            </p>
+            <p>
+              <strong>Balance:</strong>{" "}
+              {currentStudent.balance.toLocaleString()}
+            </p>
+            <p>
+              <strong>Status:</strong>{" "}
+              {currentStudent.status === "active" ? "Active" : "Inactive"}
+            </p>
+          </div>
         )}
       </Modal>
     </div>

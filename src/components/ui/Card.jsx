@@ -1,18 +1,19 @@
 import "../../assets/css/components.css";
 
-function Card({ children, title }) {
+function Card({ title, value, icon, bgColor }) {
   return (
     <div
       style={{
-        background: "#1e293b",
+        background: bgColor || "#1e293b",
         padding: "20px",
         borderRadius: "12px",
-        // marginBottom: "20px",
         boxShadow: "0 2px 10px rgba(0,0,0,0.3)",
+        color: "white",
       }}
     >
-      {title && <h3 style={{ marginBottom: "0" }}>{title}</h3>}
-      {children}
+      {icon && <div style={{ marginBottom: "10px" }}>{icon}</div>}
+      {title && <h3 style={{ marginBottom: "10px" }}>{title}</h3>}
+      <h2>{value}</h2>
     </div>
   );
 }

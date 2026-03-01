@@ -1,120 +1,104 @@
+import { useEffect, useState } from "react";
 import { Bar } from "react-chartjs-2";
 import Card from "../components/ui/Card";
-import "../assets/css/pages.css";
 import "chart.js/auto";
+import { getDashboard } from "../api/dashboard.service";
 import {
-  FaUserGraduate,
-  FaChalkboardTeacher,
+  FaUsers,
+  FaMoneyBillWave,
   FaClipboardCheck,
+  FaChalkboardTeacher,
 } from "react-icons/fa";
 
-// ❌ Fake student & teacher data
-const students = [
-  { id: 1, name: "Ali", status: "Present", due: 0 },
-  { id: 2, name: "Vali", status: "Absent", due: 200 },
-  { id: 3, name: "Olim", status: "Present", due: 0 },
-  { id: 4, name: "Sara", status: "Late", due: 100 },
-];
-
-const teachers = [
-  { id: 1, name: "Mr. John" },
-  { id: 2, name: "Ms. Mary" },
-];
-
-// Cards & attendance calculations
-const totalStudents = students.length;
-const totalTeachers = teachers.length;
-const totalPresent = students.filter((s) => s.status === "Present").length;
-const totalAbsent = students.filter((s) => s.status === "Absent").length;
-const totalLate = students.filter((s) => s.status === "Late").length;
-const totalDue = students.filter((s) => s.due > 0).length;
-
-const attendanceValues = students.map((s) =>
-  s.status === "Present" ? 100 : s.status === "Late" ? 50 : 0,
-);
-const attendanceAvg =
-  attendanceValues.reduce((sum, val) => sum + val, 0) / students.length;
-
-// Fake monthly attendance
-const months = ["Jan", "Feb", "Mar", "Apr"];
-const monthlyAttendance = months.map(() => {
-  const values = students.map((s) =>
-    s.status === "Present" ? 100 : s.status === "Late" ? 50 : 0,
-  );
-  return values.reduce((a, b) => a + b, 0) / students.length;
-});
-const monthlyDue = months.map(() => students.filter((s) => s.due > 0).length);
-
-const chartData = {
-  labels: months,
-  datasets: [
-    {
-      label: "Monthly Attendance %",
-      data: monthlyAttendance,
-      backgroundColor: "#3b82f6",
-      borderRadius: 5,
-    },
-    {
-      label: "Students with Due",
-      data: monthlyDue,
-      backgroundColor: "#f97316",
-      borderRadius: 5,
-    },
-  ],
-};
-
 function Dashboard() {
+  const [summary, setSummary] = useState([]);
+
+  useEffect(() => {
+    const fetchDashboard = async () => {
+      try {
+        const res = await getDashboard();
+        setSummary(res.summary);
+      } catch (err) {
+        console.log("Dashboard fetch error:", err);
+      }
+    };
+    fetchDashboard();
+  }, []);
+
+  if (!summary.length) return <p>Loading...</p>;
+
+  const totalStudents = summary.reduce(
+    (sum, group) => sum + group.studentCount,
+    0,
+  );
+
+  const totalPayments = summary.reduce(
+    (sum, group) => sum + group.totalPayments,
+    0,
+  );
+
+  const avgAttendance =
+    summary.reduce(
+      (sum, group) => sum + Number(group.attendancePercentage),
+      0,
+    ) / summary.length;
+
+  const chartData = {
+    labels: summary.map((g) => g.groupName),
+    datasets: [
+      {
+        label: "Attendance %",
+        data: summary.map((g) => Number(g.attendancePercentage)),
+        backgroundColor: "#3b82f6",
+        borderRadius: 6,
+      },
+      {
+        label: "Payments",
+        data: summary.map((g) => g.totalPayments),
+        backgroundColor: "#22c55e",
+        borderRadius: 6,
+      },
+    ],
+  };
+  const mentorIds = summary.map((g) => g.mentor.id);
+  const uniqueMentors = new Set(mentorIds);
+  const totalMentors = uniqueMentors.size;
   return (
     <div className="dashboard">
-      <h1 className="dashboard-title">Dashboard</h1>
+      <h1>Dashboard</h1>
 
       <div className="cards-grid">
         <Card
-          title="Students"
+          title="Total Students"
           value={totalStudents}
-          icon={<FaUserGraduate size={24} />}
+          icon={<FaUsers size={24} />}
           bgColor="#1e40af"
         />
+
         <Card
-          title="Teachers"
-          value={totalTeachers}
-          icon={<FaChalkboardTeacher size={24} />}
+          title="Total Payments"
+          value={`${totalPayments.toLocaleString()} so'm`}
+          icon={<FaMoneyBillWave size={24} />}
           bgColor="#047857"
         />
+
         <Card
-          title="Attendance %"
-          value={`${attendanceAvg.toFixed(0)}%`}
+          title="Avg Attendance"
+          value={`${avgAttendance.toFixed(0)}%`}
           icon={<FaClipboardCheck size={24} />}
           bgColor="#b45309"
         />
+
         <Card
-          title="Present"
-          value={totalPresent}
-          icon={<FaClipboardCheck size={24} />}
-          bgColor="#16a34a"
-        />
-        <Card
-          title="Absent"
-          value={totalAbsent}
-          icon={<FaClipboardCheck size={24} />}
-          bgColor="#dc2626"
-        />
-        <Card
-          title="Late"
-          value={totalLate}
-          icon={<FaClipboardCheck size={24} />}
-          bgColor="#f59e0b"
-        />
-        <Card
-          title="Due Students"
-          value={totalDue}
-          icon={<FaClipboardCheck size={24} />}
-          bgColor="#f97316"
+          title="Mentors"
+          value={totalMentors}
+          icon={<FaChalkboardTeacher size={24} />}
+          bgColor="#7c3aed"
         />
       </div>
 
-      <div className="chart-container small-chart">
-        <h2>Monthly Student Attendance</h2>
+      <div className="chart-container">
+        <h2>Group Statistics</h2>
         <Bar data={chartData} />
       </div>
     </div>

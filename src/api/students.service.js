@@ -6,12 +6,12 @@ export const getStudents = async () => {
 }
 
 export const createStudent = async (data) => {
-    const res = await api.post("/students", data);
+    const res = await api.post('/students', data);
     return res.data.student;
 }
 
 export const updateStudent = async (id, data) => {
-    const res = await api.put(`/students/${id}`, data);
+    const res = await api.patch(`/students/${id}`, data);
     return res.data.student;
 }
 

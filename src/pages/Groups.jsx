@@ -4,6 +4,12 @@ import Input from "../components/ui/Input";
 import Select from "../components/ui/Select";
 import Button from "../components/ui/Button";
 import Modal from "../components/ui/Modal";
+// import {
+//   getGroups,
+//   createGroup,
+//   updateGroup,
+//   deleteGroup,
+// } from "../api/group.service";
 
 function Groups() {
   const initialData = [
@@ -37,7 +43,11 @@ function Groups() {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [currentGroup, setCurrentGroup] = useState(null);
 
-  const [form, setForm] = useState({ name: "", course: "", teacher: "" });
+  const [form, setForm] = useState({
+    name: "",
+    course: "",
+    mentorId: "2",
+  });
 
   const handleAdd = () => {
     const newGroup = { ...form, id: Date.now() };

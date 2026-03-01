@@ -3,7 +3,7 @@ import axios from "axios";
 // Base API 
 const api = axios.create({
     baseURL: "http://localhost:5577/api",
-    // "Content-Type": "application/json",
+    "Content-Type": "application/json",
 });
 
 // Request interceptor → JWT token yuborish
