@@ -16,10 +16,10 @@ function Teachers() {
     },
     {
       id: 2,
-      name: "Mira",
+      name: "Jumong",
       subject: "Physics",
       phone: "998907774455",
-      email: "mira@mail.com",
+      email: "jumong@mail.com",
     },
   ];
 
