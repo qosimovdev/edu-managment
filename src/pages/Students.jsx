@@ -155,7 +155,6 @@ function Students() {
   const data = students.map((s) => ({
     Name: s.fullName,
     Group: s.group?.name,
-    // Mentor: s.group?.mentor?.fullName,
     Phone: s.phone,
     Balance: s.balance.toLocaleString(),
     Status: (
@@ -206,7 +205,6 @@ function Students() {
           Add Student
         </Button>
       </div>
-
       <div
         style={{ background: "#1e293b", padding: "20px", borderRadius: "12px" }}
       >
