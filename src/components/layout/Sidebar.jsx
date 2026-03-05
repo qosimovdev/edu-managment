@@ -51,25 +51,31 @@ function Sidebar() {
       {/* MENU */}
       <ul>
         {menuItems.map((item) => (
-          <NavLink
+          <li
             key={item.name}
-            to={`/${item.name.toLowerCase()}`}
-            style={{ textDecoration: "none", color: "inherit" }}
+            className={active === item.name ? "active" : ""}
+            onClick={() => setActive(item.name)}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: collapsed ? "center" : "flex-start",
+              gap: "10px",
+            }}
           >
-            <li
-              className={active === item.name ? "active" : ""}
-              onClick={() => setActive(item.name)}
+            <NavLink
+              to={`/${item.name.toLowerCase()}`}
               style={{
                 display: "flex",
                 alignItems: "center",
-                justifyContent: collapsed ? "center" : "flex-start",
                 gap: "10px",
+                textDecoration: "none",
+                color: "inherit",
               }}
             >
               {item.icon}
               {!collapsed && <span>{item.name}</span>}
-            </li>
-          </NavLink>
+            </NavLink>
+          </li>
         ))}
       </ul>
     </div>

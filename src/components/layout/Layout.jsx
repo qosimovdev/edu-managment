@@ -5,13 +5,13 @@ import "../../assets/css/layout.css";
 
 function Layout() {
   return (
-    <div className="layout">
+    <main className="layout">
       <Sidebar />
       <div className="content">
         <Navbar />
         <Outlet />
       </div>
-    </div>
+    </main>
   );
 }
 
