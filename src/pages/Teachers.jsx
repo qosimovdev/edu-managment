@@ -1,34 +1,34 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Table from "../components/ui/Table";
 import Input from "../components/ui/Input";
 import Select from "../components/ui/Select";
 import Button from "../components/ui/Button";
 import Modal from "../components/ui/Modal";
-
+import { getMentors, createMentor } from "../api/mentor.service";
 function Teachers() {
-  const initialData = [
-    {
-      id: 1,
-      name: "Olim",
-      subject: "Math",
-      phone: "998901112233",
-      email: "olim@mail.com",
-    },
-    {
-      id: 2,
-      name: "Jumong",
-      subject: "Physics",
-      phone: "998907774455",
-      email: "jumong@mail.com",
-    },
-  ];
+  // const initialData = [
+  //   {
+  //     id: 1,
+  //     name: "Olim",
+  //     subject: "Math",
+  //     phone: "998901112233",
+  //     email: "olim@mail.com",
+  //   },
+  //   {
+  //     id: 2,
+  //     name: "Jumong",
+  //     subject: "Physics",
+  //     phone: "998907774455",
+  //     email: "jumong@mail.com",
+  //   },
+  // ];
 
-  const subjectOptions = [
-    { label: "Math", value: "Math" },
-    { label: "Physics", value: "Physics" },
-    { label: "Chemistry", value: "Chemistry" },
-    { label: "English", value: "English" },
-  ];
+  // const subjectOptions = [
+  //   { label: "Math", value: "Math" },
+  //   { label: "Physics", value: "Physics" },
+  //   { label: "Chemistry", value: "Chemistry" },
+  //   { label: "English", value: "English" },
+  // ];
 
   const [teachers, setTeachers] = useState(initialData);
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -37,11 +37,23 @@ function Teachers() {
   const [currentTeacher, setCurrentTeacher] = useState(null);
 
   const [form, setForm] = useState({
-    name: "",
+    fullName: "",
     subject: "",
-    phone: "",
     email: "",
+    password: "",
   });
+
+  // Fetch Teachers
+  useEffect(() => {
+    const fetchTeachers = async () => {
+      try {
+        const teachers = await getMentors();
+      } catch (err) {
+        console.log("Fetch teachers error:", err);
+      }
+    };
+    fetchTeachers();
+  }, []);
 
   // Handlers
   const handleAdd = () => {
