@@ -12,7 +12,6 @@ import {
 
 function Dashboard() {
   const [summary, setSummary] = useState([]);
-
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
@@ -24,49 +23,44 @@ function Dashboard() {
     };
     fetchDashboard();
   }, []);
-
   if (!summary.length) return <p>Loading...</p>;
-
   const totalStudents = summary.reduce(
-    (sum, group) => sum + group.studentCount,
+    (sum, group) => sum + (group?.studentCount || 0),
     0,
   );
-
   const totalPayments = summary.reduce(
-    (sum, group) => sum + group.totalPayments,
+    (sum, group) => sum + (group?.totalPayments || 0),
     0,
   );
-
   const avgAttendance =
     summary.reduce(
-      (sum, group) => sum + Number(group.attendancePercentage),
+      (sum, group) => sum + Number(group?.attendancePercentage || 0),
       0,
     ) / summary.length;
-
+  const cleanSummary = summary.filter(Boolean);
   const chartData = {
-    labels: summary.map((g) => g.groupName),
+    labels: cleanSummary.map((g) => g.groupName),
     datasets: [
       {
         label: "Attendance %",
-        data: summary.map((g) => Number(g.attendancePercentage)),
+        data: cleanSummary.map((g) => Number(g.attendancePercentage || 0)),
         backgroundColor: "#3b82f6",
         borderRadius: 6,
       },
       {
         label: "Payments",
-        data: summary.map((g) => g.totalPayments),
+        data: cleanSummary.map((g) => g.totalPayments || 0),
         backgroundColor: "#22c55e",
         borderRadius: 6,
       },
     ],
   };
-  const mentorIds = summary.map((g) => g.mentor.id);
+  const mentorIds = summary.map((g) => g?.mentor?.id).filter(Boolean);
   const uniqueMentors = new Set(mentorIds);
   const totalMentors = uniqueMentors.size;
   return (
     <div className="dashboard">
       <h1>Dashboard</h1>
-
       <div className="cards-grid">
         <Card
           title="Total Students"
@@ -74,21 +68,18 @@ function Dashboard() {
           icon={<FaUsers size={24} />}
           bgColor="#1e40af"
         />
-
         <Card
           title="Total Payments"
           value={`${totalPayments.toLocaleString()} so'm`}
           icon={<FaMoneyBillWave size={24} />}
           bgColor="#047857"
         />
-
         <Card
           title="Avg Attendance"
           value={`${avgAttendance.toFixed(0)}%`}
           icon={<FaClipboardCheck size={24} />}
           bgColor="#b45309"
         />
-
         <Card
           title="Mentors"
           value={totalMentors}
@@ -96,7 +87,6 @@ function Dashboard() {
           bgColor="#7c3aed"
         />
       </div>
-
       <div className="chart-container">
         <h2>Group Statistics</h2>
         <Bar data={chartData} />
