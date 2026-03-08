@@ -9,7 +9,6 @@ import Layout from "./components/layout/Layout";
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Students = lazy(() => import("./pages/Students"));
 const Teachers = lazy(() => import("./pages/Teachers"));
-const Courses = lazy(() => import("./pages/Courses"));
 const Groups = lazy(() => import("./pages/Groups"));
 const Payments = lazy(() => import("./pages/Payments"));
 const Attendance = lazy(() => import("./pages/Attendance"));
@@ -26,7 +25,6 @@ function App() {
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="students" element={<Students />} />
           <Route path="teachers" element={<Teachers />} />
-          <Route path="courses" element={<Courses />} />
           <Route path="groups" element={<Groups />} />
           <Route path="payments" element={<Payments />} />
           <Route path="attendance" element={<Attendance />} />

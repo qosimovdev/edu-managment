@@ -3,6 +3,7 @@ import { Bar } from "react-chartjs-2";
 import Card from "../components/ui/Card";
 import "chart.js/auto";
 import { getDashboard } from "../api/dashboard.service";
+import { getMentors } from "../api/mentor.service";
 import {
   FaUsers,
   FaMoneyBillWave,
@@ -11,7 +12,9 @@ import {
 } from "react-icons/fa";
 
 function Dashboard() {
-  const [summary, setSummary] = useState([]);
+  const [summary, setSummary] = useState(null);
+  const [mentors, setMentors] = useState([]);
+
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
@@ -21,9 +24,20 @@ function Dashboard() {
         console.log("Dashboard fetch error:", err);
       }
     };
+
+    const fetchMentors = async () => {
+      try {
+        const data = await getMentors();
+        setMentors(data.mentors);
+      } catch (err) {
+        console.log("Mentor fetch error:", err);
+      }
+    };
+
     fetchDashboard();
+    fetchMentors();
   }, []);
-  if (!summary.length) return <p>Loading...</p>;
+  if (!summary) return <p>Loading...</p>;
   const totalStudents = summary.reduce(
     (sum, group) => sum + (group?.studentCount || 0),
     0,
@@ -33,10 +47,12 @@ function Dashboard() {
     0,
   );
   const avgAttendance =
-    summary.reduce(
-      (sum, group) => sum + Number(group?.attendancePercentage || 0),
-      0,
-    ) / summary.length;
+    summary.length > 0
+      ? summary.reduce(
+          (sum, group) => sum + Number(group?.attendancePercentage || 0),
+          0,
+        ) / summary.length
+      : 0;
   const cleanSummary = summary.filter(Boolean);
   const chartData = {
     labels: cleanSummary.map((g) => g.groupName),
@@ -55,9 +71,7 @@ function Dashboard() {
       },
     ],
   };
-  const mentorIds = summary.map((g) => g?.mentor?.id).filter(Boolean);
-  const uniqueMentors = new Set(mentorIds);
-  const totalMentors = uniqueMentors.size;
+  const totalMentors = mentors.length;
   return (
     <div className="dashboard">
       <h1>Dashboard</h1>

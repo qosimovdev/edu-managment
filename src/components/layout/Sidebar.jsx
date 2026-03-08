@@ -104,7 +104,6 @@ function Sidebar() {
     { name: "Dashboard", icon: <FaChartPie /> },
     { name: "Students", icon: <FaUserGraduate /> },
     { name: "Teachers", icon: <FaChalkboardTeacher /> },
-    { name: "Courses", icon: <FaBook /> },
     { name: "Groups", icon: <FaLayerGroup /> },
     { name: "Payments", icon: <FaMoneyBill /> },
     { name: "Attendance", icon: <FaClipboardCheck /> },

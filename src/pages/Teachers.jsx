@@ -67,7 +67,7 @@ function Teachers() {
       setIsAddOpen(false);
     } catch (err) {
       console.error("Create teacher error:", err);
-      console.log(form);
+      // console.log(form);
       setError("Failed to add teacher");
     }
   };

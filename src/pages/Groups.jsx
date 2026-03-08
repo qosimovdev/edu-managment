@@ -1,100 +1,138 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Table from "../components/ui/Table";
 import Input from "../components/ui/Input";
 import Select from "../components/ui/Select";
 import Button from "../components/ui/Button";
 import Modal from "../components/ui/Modal";
-// import {
-//   getGroups,
-//   createGroup,
-//   updateGroup,
-//   deleteGroup,
-// } from "../api/group.service";
+
+import {
+  getGroups,
+  createGroup,
+  updateGroup,
+  deleteGroup,
+} from "../api/group.service";
+
+import { getMentors } from "../api/mentor.service";
 
 function Groups() {
-  const initialData = [
-    {
-      id: 1,
-      name: "Frontend Group A",
-      course: "React Basics",
-      teacher: "Olim",
-    },
-    {
-      id: 2,
-      name: "Backend Group B",
-      course: "Node.js Fundamentals",
-      teacher: "Mira",
-    },
-  ];
+  const [groups, setGroups] = useState([]);
+  const [mentors, setMentors] = useState([]);
 
-  const courseOptions = [
-    { label: "React Basics", value: "React Basics" },
-    { label: "Node.js Fundamentals", value: "Node.js Fundamentals" },
-  ];
-
-  const teacherOptions = [
-    { label: "Olim", value: "Olim" },
-    { label: "Mira", value: "Mira" },
-  ];
-
-  const [groups, setGroups] = useState(initialData);
   const [isAddOpen, setIsAddOpen] = useState(false);
-  const [isViewOpen, setIsViewOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
+
   const [currentGroup, setCurrentGroup] = useState(null);
 
   const [form, setForm] = useState({
     name: "",
-    course: "",
-    mentorId: "2",
+    mentorId: "",
+    startDate: "",
+    schedule: "",
+    status: "active",
   });
 
-  const handleAdd = () => {
-    const newGroup = { ...form, id: Date.now() };
-    setGroups([...groups, newGroup]);
-    setForm({ name: "", course: "", teacher: "" });
-    setIsAddOpen(false);
-  };
+  useEffect(() => {
+    fetchGroups();
+    fetchMentors();
+  }, []);
 
-  const handleEdit = () => {
-    setGroups(
-      groups.map((g) => (g.id === currentGroup.id ? { ...currentGroup } : g)),
-    );
-    setCurrentGroup(null);
-    setIsEditOpen(false);
-  };
-
-  const handleDelete = (group) => {
-    if (window.confirm(`Delete ${group.name}?`)) {
-      setGroups(groups.filter((g) => g.id !== group.id));
+  const fetchGroups = async () => {
+    try {
+      const data = await getGroups();
+      setGroups(data);
+    } catch (err) {
+      console.log(err);
     }
   };
 
-  const handleView = (group) => {
-    setCurrentGroup(group);
-    setIsViewOpen(true);
+  const fetchMentors = async () => {
+    try {
+      const data2 = await getMentors();
+
+      const options = data2.mentors.map((m) => ({
+        label: m.fullName,
+        value: m.id,
+      }));
+
+      setMentors(options);
+    } catch (err) {
+      console.log(err);
+    }
   };
-  const handleOpenEdit = (group) => {
-    setCurrentGroup(group);
-    setIsEditOpen(true);
-  };
+
   const handleFormChange = (e) => {
     const { name, value } = e.target;
-    if (isEditOpen) setCurrentGroup({ ...currentGroup, [name]: value });
-    else setForm({ ...form, [name]: value });
+
+    if (isEditOpen) {
+      setCurrentGroup({ ...currentGroup, [name]: value });
+    } else {
+      setForm({ ...form, [name]: value });
+    }
   };
 
-  const columns = ["name", "course", "teacher", "actions"];
+  const handleAdd = async () => {
+    try {
+      const group = await createGroup(form);
+      setGroups([group, ...groups]);
+      setForm({
+        name: "",
+        mentorId: "",
+        startDate: "",
+        schedule: "",
+        status: "active",
+      });
+      setIsAddOpen(false);
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
-  const data = groups.map((group) => ({
-    ...group,
+  const handleEdit = async () => {
+    try {
+      const updated = await updateGroup(currentGroup.id, currentGroup);
+
+      setGroups(groups.map((g) => (g.id === updated.id ? updated : g)));
+
+      setIsEditOpen(false);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const handleDelete = async (group) => {
+    if (!window.confirm("Delete group?")) return;
+
+    await deleteGroup(group.id);
+
+    setGroups(groups.filter((g) => g.id !== group.id));
+  };
+
+  const columns = [
+    "name",
+    "mentor",
+    "students",
+    "schedule",
+    "status",
+    "actions",
+  ];
+
+  const data = groups.map((g) => ({
+    ...g,
+    mentor: g.mentor?.fullName || "-",
+    students: g.students?.length || 0,
     actions: (
       <>
-        <Button onClick={() => handleView(group)}>See</Button>
-        <Button variant="success" onClick={() => handleOpenEdit(group)}>
+        <Button
+          variant="success"
+          onClick={() => {
+            setCurrentGroup(g);
+            setIsEditOpen(true);
+          }}
+        >
           Edit
         </Button>
-        <Button variant="danger" onClick={() => handleDelete(group)}>
+
+        <Button variant="danger" onClick={() => handleDelete(g)}>
           Delete
         </Button>
       </>
@@ -102,111 +140,110 @@ function Groups() {
   }));
 
   return (
-    <div style={{ padding: "15px" }}>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          marginBottom: "15px",
-        }}
-      >
+    <div style={{ padding: 20 }}>
+      <div style={{ display: "flex", justifyContent: "space-between" }}>
         <h2>Groups</h2>
+
         <Button variant="success" onClick={() => setIsAddOpen(true)}>
           Add Group
         </Button>
       </div>
 
-      <div
-        style={{ background: "#1e293b", padding: "20px", borderRadius: "12px" }}
-      >
-        <Table columns={columns} data={data} />
-      </div>
+      <Table columns={columns} data={data} />
 
-      {/* Add Modal */}
+      {/* ADD */}
       <Modal isOpen={isAddOpen} onClose={() => setIsAddOpen(false)}>
-        <h3 style={{ marginBottom: "15px" }}>Add Group</h3>
+        <h3>Add Group</h3>
+
         <Input
           name="name"
           value={form.name}
           onChange={handleFormChange}
-          placeholder="Group Name"
+          placeholder="Group name"
         />
+
         <Select
-          name="course"
-          value={form.course}
+          name="mentorId"
+          value={form.mentorId}
           onChange={handleFormChange}
-          options={courseOptions}
-          placeholder="Select Course"
+          options={mentors}
+          placeholder="Select mentor"
         />
+
+        <Input
+          type="date"
+          name="startDate"
+          value={form.startDate}
+          onChange={handleFormChange}
+        />
+
+        <Input
+          name="schedule"
+          value={form.schedule}
+          onChange={handleFormChange}
+          placeholder="Mon Wed Fri"
+        />
+
         <Select
-          name="teacher"
-          value={form.teacher}
+          name="status"
+          value={form.status}
           onChange={handleFormChange}
-          options={teacherOptions}
-          placeholder="Select Teacher"
+          options={[
+            { label: "Active", value: "active" },
+            { label: "Inactive", value: "inactive" },
+          ]}
         />
-        <div
-          style={{ transform: "translate(-75px, 62px)", textAlign: "right" }}
-        >
-          <Button variant="success" onClick={handleAdd}>
-            Add
-          </Button>
-        </div>
+
+        <Button variant="success" onClick={handleAdd}>
+          Create
+        </Button>
       </Modal>
 
-      {/* View Modal */}
-      <Modal isOpen={isViewOpen} onClose={() => setIsViewOpen(false)}>
-        <h3 style={{ marginBottom: "15px" }}>View Group</h3>
-        {currentGroup && (
-          <>
-            <p>
-              <strong>Name:</strong> {currentGroup.name}
-            </p>
-            <p>
-              <strong>Course:</strong> {currentGroup.course}
-            </p>
-            <p>
-              <strong>Teacher:</strong> {currentGroup.teacher}
-            </p>
-          </>
-        )}
-      </Modal>
-
-      {/* Edit Modal */}
+      {/* EDIT */}
       <Modal isOpen={isEditOpen} onClose={() => setIsEditOpen(false)}>
-        <h3 style={{ marginBottom: "15px" }}>Edit Group</h3>
+        <h3>Edit Group</h3>
+
         {currentGroup && (
           <>
             <Input
-              label="Group Name"
               name="name"
               value={currentGroup.name}
               onChange={handleFormChange}
             />
+
             <Select
-              label="Course"
-              name="course"
-              value={currentGroup.course}
+              name="mentorId"
+              value={currentGroup.mentorId}
               onChange={handleFormChange}
-              options={courseOptions}
+              options={mentors}
             />
+
+            <Input
+              type="date"
+              name="startDate"
+              value={currentGroup.startDate || ""}
+              onChange={handleFormChange}
+            />
+
+            <Input
+              name="schedule"
+              value={currentGroup.schedule || ""}
+              onChange={handleFormChange}
+            />
+
             <Select
-              label="Teacher"
-              name="teacher"
-              value={currentGroup.teacher}
+              name="status"
+              value={currentGroup.status}
               onChange={handleFormChange}
-              options={teacherOptions}
+              options={[
+                { label: "Active", value: "active" },
+                { label: "Inactive", value: "inactive" },
+              ]}
             />
-            <div
-              style={{
-                transform: "translate(-75px, 62px)",
-                textAlign: "right",
-              }}
-            >
-              <Button variant="update" onClick={handleEdit}>
-                Update
-              </Button>
-            </div>
+
+            <Button variant="update" onClick={handleEdit}>
+              Update
+            </Button>
           </>
         )}
       </Modal>
