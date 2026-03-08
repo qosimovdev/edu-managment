@@ -1,67 +1,73 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Table from "../components/ui/Table";
 import Input from "../components/ui/Input";
 import Select from "../components/ui/Select";
 import Button from "../components/ui/Button";
 import Modal from "../components/ui/Modal";
+import { getPayments, createPayment } from "../api/payment.service";
+import { getStudents } from "../api/students.service";
 
 function Payments() {
-  const initialData = [
-    {
-      id: 1,
-      student: "Ali",
-      amount: "200$",
-      date: "2026-02-01",
-      method: "Card",
-    },
-    {
-      id: 2,
-      student: "Vali",
-      amount: "250$",
-      date: "2026-02-03",
-      method: "Cash",
-    },
-  ];
-
   const paymentMethods = [
-    { label: "Cash", value: "Cash" },
-    { label: "Card", value: "Card" },
-    { label: "Online", value: "Online" },
+    { label: "Cash", value: "cash" },
+    { label: "Card", value: "card" },
+    { label: "Online", value: "online" },
   ];
 
-  const [payments, setPayments] = useState(initialData);
+  const [payments, setPayments] = useState([]);
+  const [students, setStudents] = useState([]);
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isViewOpen, setIsViewOpen] = useState(false);
-  const [isEditOpen, setIsEditOpen] = useState(false);
   const [currentPayment, setCurrentPayment] = useState(null);
 
   const [form, setForm] = useState({
-    student: "",
+    studentId: "",
     amount: "",
-    date: "",
+    paymentDate: "",
     method: "",
   });
 
-  const handleAdd = () => {
-    const newPayment = { ...form, id: Date.now() };
-    setPayments([...payments, newPayment]);
-    setForm({ student: "", amount: "", date: "", method: "" });
-    setIsAddOpen(false);
-  };
+  // Fetch payments va students
+  useEffect(() => {
+    const fetchPayments = async () => {
+      try {
+        const res = await getPayments();
+        setPayments(res || []);
+      } catch (err) {
+        console.error("Fetch payments error:", err);
+      }
+    };
 
-  //   const handleEdit = () => {
-  //     setPayments(
-  //       payments.map((p) =>
-  //         p.id === currentPayment.id ? { ...currentPayment } : p,
-  //       ),
-  //     );
-  //     setCurrentPayment(null);
-  //     setIsEditOpen(false);
-  //   };
+    const fetchStudents = async () => {
+      try {
+        const res = await getStudents();
+        setStudents(res || []);
+      } catch (err) {
+        console.error("Fetch students error:", err);
+      }
+    };
 
-  const handleDelete = (payment) => {
-    if (window.confirm(`Delete payment of ${payment.student}?`)) {
-      setPayments(payments.filter((p) => p.id !== payment.id));
+    fetchPayments();
+    fetchStudents();
+  }, []);
+
+  const handleAdd = async () => {
+    try {
+      if (
+        !form.studentId ||
+        !form.amount ||
+        !form.paymentDate ||
+        !form.method
+      ) {
+        alert("Please fill all fields");
+        return;
+      }
+      const res = await createPayment(form);
+      setPayments([res.payment, ...payments]);
+      setForm({ studentId: "", amount: "", paymentDate: "", method: "" });
+      setIsAddOpen(false);
+    } catch (err) {
+      console.error("Create payment error:", err);
     }
   };
 
@@ -69,29 +75,22 @@ function Payments() {
     setCurrentPayment(payment);
     setIsViewOpen(true);
   };
-  //   const handleOpenEdit = (payment) => {
-  //     setCurrentPayment(payment);
-  //     setIsEditOpen(true);
-  //   };
+
   const handleFormChange = (e) => {
     const { name, value } = e.target;
-    if (isEditOpen) setCurrentPayment({ ...currentPayment, [name]: value });
-    else setForm({ ...form, [name]: value });
+    setForm({ ...form, [name]: value });
   };
 
   const columns = ["student", "amount", "date", "method", "actions"];
-
-  const data = payments.map((payment) => ({
-    ...payment,
+  const data = (payments || []).map((p) => ({
+    id: p?.id,
+    student: p?.student?.fullName || `ID: ${p?.studentId}`,
+    amount: p?.amount,
+    date: p?.paymentDate?.split("T")[0] || "",
+    method: p?.method,
     actions: (
       <>
-        <Button onClick={() => handleView(payment)}>See</Button>
-        {/* <Button variant="success" onClick={() => handleOpenEdit(payment)}>
-          Edit
-        </Button> */}
-        <Button variant="danger" onClick={() => handleDelete(payment)}>
-          Delete
-        </Button>
+        <Button onClick={() => handleView(p)}>See</Button>
       </>
     ),
   }));
@@ -120,11 +119,15 @@ function Payments() {
       {/* Add Modal */}
       <Modal isOpen={isAddOpen} onClose={() => setIsAddOpen(false)}>
         <h3 style={{ marginBottom: "15px" }}>Add Payment</h3>
-        <Input
-          name="student"
-          value={form.student}
+        <Select
+          name="studentId"
+          value={form.studentId}
           onChange={handleFormChange}
-          placeholder="Student"
+          options={(students || []).map((s) => ({
+            label: s.fullName,
+            value: s.id,
+          }))}
+          placeholder="Select Student"
         />
         <Input
           name="amount"
@@ -133,11 +136,11 @@ function Payments() {
           placeholder="Amount"
         />
         <Input
-          name="date"
+          name="paymentDate"
           type="date"
-          value={form.date}
+          value={form.paymentDate}
           onChange={handleFormChange}
-          placeholder="Date"
+          placeholder="Payment Date"
         />
         <Select
           name="method"
@@ -146,9 +149,7 @@ function Payments() {
           options={paymentMethods}
           placeholder="Payment Method"
         />
-        <div
-          style={{ transform: "translate(-75px, 62px)", textAlign: "right" }}
-        >
+        <div style={{ textAlign: "right", marginTop: "15px" }}>
           <Button variant="success" onClick={handleAdd}>
             Add
           </Button>
@@ -161,13 +162,15 @@ function Payments() {
         {currentPayment && (
           <>
             <p>
-              <strong>Student:</strong> {currentPayment.student}
+              <strong>Student:</strong>{" "}
+              {currentPayment.student?.fullName ||
+                `ID: ${currentPayment.studentId}`}
             </p>
             <p>
               <strong>Amount:</strong> {currentPayment.amount}
             </p>
             <p>
-              <strong>Date:</strong> {currentPayment.date}
+              <strong>Date:</strong> {currentPayment.paymentDate?.split("T")[0]}
             </p>
             <p>
               <strong>Method:</strong> {currentPayment.method}
@@ -175,51 +178,6 @@ function Payments() {
           </>
         )}
       </Modal>
-
-      {/* Edit Modal */}
-      {/* <Modal isOpen={isEditOpen} onClose={() => setIsEditOpen(false)}>
-        <h3 style={{ marginBottom: "15px" }}>Edit Payment</h3>
-        {currentPayment && (
-          <>
-            <Input
-              name="student"
-              value={currentPayment.student}
-              onChange={handleFormChange}
-              placeholder="Student"
-            />
-            <Input
-              name="amount"
-              value={currentPayment.amount}
-              onChange={handleFormChange}
-              placeholder="Amount"
-            />
-            <Input
-              name="date"
-              type="date"
-              value={currentPayment.date}
-              onChange={handleFormChange}
-              placeholder="Date"
-            />
-            <Select
-              name="method"
-              value={currentPayment.method}
-              onChange={handleFormChange}
-              options={paymentMethods}
-              placeholder="Payment Method"
-            />
-            <div
-              style={{
-                transform: "translate(-75px, 62px)",
-                textAlign: "right",
-              }}
-            >
-              <Button variant="update" onClick={handleEdit}>
-                Update
-              </Button>
-            </div>
-          </>
-        )}
-      </Modal> */}
     </div>
   );
 }

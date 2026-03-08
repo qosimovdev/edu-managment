@@ -31,11 +31,6 @@ function Groups() {
     status: "active",
   });
 
-  useEffect(() => {
-    fetchGroups();
-    fetchMentors();
-  }, []);
-
   const fetchGroups = async () => {
     try {
       const data = await getGroups();
@@ -59,6 +54,11 @@ function Groups() {
       console.log(err);
     }
   };
+
+  useEffect(() => {
+    fetchGroups();
+    fetchMentors();
+  }, []);
 
   const handleFormChange = (e) => {
     const { name, value } = e.target;
