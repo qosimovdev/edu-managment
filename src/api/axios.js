@@ -6,7 +6,6 @@ const api = axios.create({
     "Content-Type": "application/json",
 });
 
-// Request interceptor → JWT token yuborish
 api.interceptors.request.use((config) => {
     const token = localStorage.getItem("token");
     if (token) {

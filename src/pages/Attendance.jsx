@@ -43,7 +43,6 @@ function Attendance() {
           attendanceId: a.id,
         }));
         setStudents(studentsData);
-        // Extract unique groups
         const uniqGroups = [
           ...new Map(
             studentsData.map((s) => [
@@ -54,7 +53,6 @@ function Attendance() {
         ];
         setGroups(uniqGroups);
         setSelectedGroup(uniqGroups[0]?.value || "");
-        // Fetch all students for Add Modal
         const studentsRes = await getStudents();
         setAllStudents(studentsRes.students || []);
       } catch (err) {

@@ -226,14 +226,6 @@ function Students() {
           onChange={handleFormChange}
           options={groupsOptions}
         />
-        {/* <select name="groupId" value={form.groupId} onChange={handleFormChange}>
-          <option value="">Select group</option>
-          {groupsOptions.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select> */}
         <Input
           name="phone"
           value={form.phone}

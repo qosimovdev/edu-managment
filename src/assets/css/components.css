@@ -62,7 +62,6 @@
 }
 
 /* TABLE */
-/* Table wrapper for horizontal scroll */
 .table-wrapper {
   overflow-x: auto;
   border-radius: 8px;

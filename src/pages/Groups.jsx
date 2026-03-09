@@ -17,12 +17,9 @@ import { getMentors } from "../api/mentor.service";
 function Groups() {
   const [groups, setGroups] = useState([]);
   const [mentors, setMentors] = useState([]);
-
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
-
   const [currentGroup, setCurrentGroup] = useState(null);
-
   const [form, setForm] = useState({
     name: "",
     mentorId: "",
@@ -62,7 +59,6 @@ function Groups() {
 
   const handleFormChange = (e) => {
     const { name, value } = e.target;
-
     if (isEditOpen) {
       setCurrentGroup({ ...currentGroup, [name]: value });
     } else {
@@ -90,9 +86,7 @@ function Groups() {
   const handleEdit = async () => {
     try {
       const updated = await updateGroup(currentGroup.id, currentGroup);
-
       setGroups(groups.map((g) => (g.id === updated.id ? updated : g)));
-
       setIsEditOpen(false);
     } catch (err) {
       console.log(err);
@@ -101,9 +95,7 @@ function Groups() {
 
   const handleDelete = async (group) => {
     if (!window.confirm("Delete group?")) return;
-
     await deleteGroup(group.id);
-
     setGroups(groups.filter((g) => g.id !== group.id));
   };
 
@@ -131,7 +123,6 @@ function Groups() {
         >
           Edit
         </Button>
-
         <Button variant="danger" onClick={() => handleDelete(g)}>
           Delete
         </Button>
@@ -149,7 +140,6 @@ function Groups() {
         }}
       >
         <h2>Groups</h2>
-
         <Button variant="success" onClick={() => setIsAddOpen(true)}>
           Add Group
         </Button>
@@ -163,14 +153,12 @@ function Groups() {
       {/* ADD */}
       <Modal isOpen={isAddOpen} onClose={() => setIsAddOpen(false)}>
         <h3>Add Group</h3>
-
         <Input
           name="name"
           value={form.name}
           onChange={handleFormChange}
           placeholder="Group name"
         />
-
         <Select
           name="mentorId"
           value={form.mentorId}
@@ -178,21 +166,18 @@ function Groups() {
           options={mentors}
           placeholder="Select mentor"
         />
-
         <Input
           type="date"
           name="startDate"
           value={form.startDate}
           onChange={handleFormChange}
         />
-
         <Input
           name="schedule"
           value={form.schedule}
           onChange={handleFormChange}
           placeholder="Mon Wed Fri"
         />
-
         <Select
           name="status"
           value={form.status}
@@ -217,7 +202,6 @@ function Groups() {
       {/* EDIT */}
       <Modal isOpen={isEditOpen} onClose={() => setIsEditOpen(false)}>
         <h3>Edit Group</h3>
-
         {currentGroup && (
           <>
             <Input
@@ -225,27 +209,23 @@ function Groups() {
               value={currentGroup.name}
               onChange={handleFormChange}
             />
-
             <Select
               name="mentorId"
               value={currentGroup.mentorId}
               onChange={handleFormChange}
               options={mentors}
             />
-
             <Input
               type="date"
               name="startDate"
               value={currentGroup.startDate || ""}
               onChange={handleFormChange}
             />
-
             <Input
               name="schedule"
               value={currentGroup.schedule || ""}
               onChange={handleFormChange}
             />
-
             <Select
               name="status"
               value={currentGroup.status}

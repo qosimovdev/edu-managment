@@ -1,22 +1,9 @@
 import { useState, useEffect } from "react";
 import Table from "../components/ui/Table";
 import Input from "../components/ui/Input";
-import Select from "../components/ui/Select";
 import Button from "../components/ui/Button";
 import Modal from "../components/ui/Modal";
-import {
-  getMentors,
-  createMentor,
-  // updateMentor,
-  // deleteMentor,
-} from "../api/mentor.service";
-
-// const subjectOptions = [
-//   { label: "Math", value: "Math" },
-//   { label: "Physics", value: "Physics" },
-//   { label: "Chemistry", value: "Chemistry" },
-//   { label: "English", value: "English" },
-// ];
+import { getMentors, createMentor } from "../api/mentor.service";
 
 function Teachers() {
   const [teachers, setTeachers] = useState([]);
@@ -67,7 +54,6 @@ function Teachers() {
       setIsAddOpen(false);
     } catch (err) {
       console.error("Create teacher error:", err);
-      // console.log(form);
       setError("Failed to add teacher");
     }
   };
@@ -155,12 +141,6 @@ function Teachers() {
           onChange={handleFormChange}
           placeholder="Teacher Name"
         />
-        {/* <Select
-          name="subject"
-          value={form.subject}
-          onChange={handleFormChange}
-          options={subjectOptions}
-        /> */}
         <Input
           name="subject"
           value={form.subject}

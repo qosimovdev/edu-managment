@@ -49,7 +49,6 @@ function Navbar() {
         {openDropdown && (
           <div className="dropdown">
             <button onClick={() => navigate("/profile")}>Profile</button>
-
             <button onClick={handleLogout}>Logout</button>
           </div>
         )}
