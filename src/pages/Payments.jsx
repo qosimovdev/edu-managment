@@ -149,7 +149,12 @@ function Payments() {
           options={paymentMethods}
           placeholder="Payment Method"
         />
-        <div style={{ textAlign: "right", marginTop: "15px" }}>
+        <div
+          style={{
+            transform: "translate(-75px, 62px)",
+            textAlign: "right",
+          }}
+        >
           <Button variant="success" onClick={handleAdd}>
             Add
           </Button>

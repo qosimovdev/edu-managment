@@ -140,8 +140,14 @@ function Groups() {
   }));
 
   return (
-    <div style={{ padding: 20 }}>
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
+    <div style={{ padding: "15px" }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          marginBottom: "15px",
+        }}
+      >
         <h2>Groups</h2>
 
         <Button variant="success" onClick={() => setIsAddOpen(true)}>
@@ -149,8 +155,11 @@ function Groups() {
         </Button>
       </div>
 
-      <Table columns={columns} data={data} />
-
+      <div
+        style={{ background: "#1e293b", padding: "20px", borderRadius: "12px" }}
+      >
+        <Table columns={columns} data={data} />
+      </div>
       {/* ADD */}
       <Modal isOpen={isAddOpen} onClose={() => setIsAddOpen(false)}>
         <h3>Add Group</h3>
@@ -193,10 +202,16 @@ function Groups() {
             { label: "Inactive", value: "inactive" },
           ]}
         />
-
-        <Button variant="success" onClick={handleAdd}>
-          Create
-        </Button>
+        <div
+          style={{
+            transform: "translate(-75px, 62px)",
+            textAlign: "right",
+          }}
+        >
+          <Button variant="success" onClick={handleAdd}>
+            Create
+          </Button>
+        </div>
       </Modal>
 
       {/* EDIT */}
@@ -240,10 +255,16 @@ function Groups() {
                 { label: "Inactive", value: "inactive" },
               ]}
             />
-
-            <Button variant="update" onClick={handleEdit}>
-              Update
-            </Button>
+            <div
+              style={{
+                transform: "translate(-75px, 62px)",
+                textAlign: "right",
+              }}
+            >
+              <Button variant="update" onClick={handleEdit}>
+                Update
+              </Button>
+            </div>
           </>
         )}
       </Modal>

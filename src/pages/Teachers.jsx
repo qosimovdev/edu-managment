@@ -63,7 +63,7 @@ function Teachers() {
     try {
       const newTeacher = await createMentor(form);
       setTeachers([...teachers, newTeacher]);
-      setForm({ fullName: "", subject: "", email: "" });
+      setForm({ fullName: "", subject: "", email: "", password: "" });
       setIsAddOpen(false);
     } catch (err) {
       console.error("Create teacher error:", err);
@@ -72,17 +72,17 @@ function Teachers() {
     }
   };
 
-  const handleEdit = async () => {
-    try {
-      const updated = await updateMentor(currentTeacher.id, currentTeacher);
-      setTeachers(teachers.map((t) => (t.id === updated.id ? updated : t)));
-      setCurrentTeacher(null);
-      setIsEditOpen(false);
-    } catch (err) {
-      console.error("Update teacher error:", err);
-      setError("Failed to update teacher");
-    }
-  };
+  // const handleEdit = async () => {
+  //   try {
+  //     const updated = await updateMentor(currentTeacher.id, currentTeacher);
+  //     setTeachers(teachers.map((t) => (t.id === updated.id ? updated : t)));
+  //     setCurrentTeacher(null);
+  //     setIsEditOpen(false);
+  //   } catch (err) {
+  //     console.error("Update teacher error:", err);
+  //     setError("Failed to update teacher");
+  //   }
+  // };
 
   // const handleDelete = async (teacher) => {
   //   if (!window.confirm(`Delete ${teacher.name}?`)) return;
@@ -100,10 +100,10 @@ function Teachers() {
     setIsViewOpen(true);
   };
 
-  const handleOpenEdit = (teacher) => {
-    setCurrentTeacher(teacher);
-    setIsEditOpen(true);
-  };
+  // const handleOpenEdit = (teacher) => {
+  //   setCurrentTeacher(teacher);
+  //   setIsEditOpen(true);
+  // };
 
   // Table columns
   const columns = ["fullName", "subject", "email", "password", "actions"];
@@ -179,7 +179,12 @@ function Teachers() {
           onChange={handleFormChange}
           placeholder="Password"
         />
-        <div style={{ textAlign: "right", marginTop: "15px" }}>
+        <div
+          style={{
+            transform: "translate(-75px, 62px)",
+            textAlign: "right",
+          }}
+        >
           <Button variant="success" onClick={handleAdd}>
             Add
           </Button>

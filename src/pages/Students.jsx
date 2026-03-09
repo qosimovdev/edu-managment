@@ -156,7 +156,7 @@ function Students() {
     Name: s.fullName,
     Group: s.group?.name,
     Phone: s.phone,
-    Balance: s.balance.toLocaleString(),
+    Balance: s.balance?.toLocaleString(),
     Status: (
       <Button
         variant={s.status === "active" ? "success" : "danger"}
