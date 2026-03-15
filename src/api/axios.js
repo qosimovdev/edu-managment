@@ -3,6 +3,7 @@ import axios from "axios";
 // Base API 
 const api = axios.create({
     baseURL: "http://localhost:5577/api",
+    // baseURL: "https://edu-managment-backedn.railway.internal",
     "Content-Type": "application/json",
 });
 

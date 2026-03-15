@@ -92,7 +92,7 @@ function Teachers() {
   // };
 
   // Table columns
-  const columns = ["fullName", "subject", "email", "password", "actions"];
+  const columns = ["fullName", "subject", "email", "actions"];
   const data = teachers.map((teacher) => ({
     ...teacher,
     actions: (
